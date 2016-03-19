@@ -1,0 +1,33 @@
+doctype html
+html
+  head
+    title Account | World Travel Database
+  body
+    include head.jade
+    
+    h2 Configure Account - #{username}
+    hr
+    
+    h4 Change Password
+    // TODO: backend of change password
+    if (error == "nomatch")
+      h2.text-danger New password doesn't match
+    if (error == "wrongcurrent")
+      h2.text-danger Current password is not correct
+    .row
+      form.col-sm-12.col-md-4(method="GET", action="/form/changepw/")
+        .form-group
+          label(for="currentpassword") Current password
+          input.form-control(type="password", name="currentpassword", id="currentpassword")
+        .form-group
+          label(for="newpassword") New Password
+          input.form-control(type="password", name="newpassword", id="newpassword")
+        .form-group
+          label(for="confirmnewpassword") Confirm New Password
+          input.form-control(type="password", name="confirmnewpassword", id="confirmnewpassword")
+        button.btn.btn-primary(type="submit") Change Password
+//    hr
+    
+//    p Highway to the danger zone! This will delete your account and all travelogues.
+//    button.btn.btn-danger#btnDeleteAccount Delete Account
+//    hr

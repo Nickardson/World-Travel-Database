@@ -1,0 +1,66 @@
+doctype html
+html
+  head
+    title Debug | World Travel Database
+  body
+    include head.jade
+    
+    if unauthorized
+      h1 Unauthorized, if you are an administrator, please login.
+    else
+      if ip
+        h4 Server IP (Local Host)
+        div=ip
+      hr
+      
+      h4 Application Properties
+      table.table
+        tr
+          th Key
+          th Value
+        for v,k in properties
+          tr
+            td=k
+            td=v
+      hr
+      
+      h4 Users
+      table.table
+        tr
+          th ID
+          th Username
+          th Hashed Password
+          th Is Admin?
+        for user in users
+          tr
+            td= user.id
+            td= user.username
+            td= user.password
+            td= user.admin
+      
+      h4 Travelogues
+      table.table#travelogues
+        tr
+          td ID
+          td OwnerID
+          td Content
+          td Visit Date
+        for travelogue in travelogues
+          tr
+            td= travelogue.id
+            td= travelogue.ownerid
+            td= travelogue.content
+            td= travelogue.visitDate
+      
+      h4 Travel_Images
+      table.table#travel_images
+        tr
+          td ID
+          td LogID
+          td Filename
+        for img in images
+          tr
+            td= img.id
+            td= img.logid
+            td= img.filename
+      

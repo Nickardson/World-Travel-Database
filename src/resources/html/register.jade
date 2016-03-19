@@ -1,0 +1,14 @@
+include mixins/mixins.jade
+
+doctype html
+html
+  head
+    title Register | World Travel Database
+  body
+    include head.jade
+    style
+      include style.css
+    div.row
+      .col-md-6
+        +registerform()
+    include footer.html

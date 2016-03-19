@@ -1,0 +1,153 @@
+mixin favicons
+  link(rel="shortcut icon", href="favicon.ico" type="image/x-icon")
+
+mixin logimgs2(imgs, id)
+  .well.log-images
+    each img, i in imgs
+      if i < 3
+        a.expandable(href="/img/" + img.filename, rel="gallery" + id)
+          if _.endsWith(img.filename, "webm")
+            video.log-img(src="/img/" + img.filename, data-id=img.id, autoplay, muted)
+          else
+            img.log-img(src="/img/" + img.filename, data-id=img.id)
+      else
+        a.log-hidden.expandable(href="/img/" + img.filename, rel="gallery" + id)
+          if _.endsWith(img.filename, "webm")
+            video.log-img(src="/img/" + img.filename, data-id=img.id, autoplay, muted, loop)
+          else
+            img.log-img(src="/img/" + img.filename, data-id=img.id)
+    if imgs.size() > 3
+      button.btn.btn-default.logimg-expand &plus;
+
+mixin addlogbutton()
+  button#btnAddTravelogue.btn.btn-primary Create a Travelogue 
+    b &plus;
+
+mixin addlogmodal()
+  div#addlogmodal.modal.fade(tabindex='-1', role='dialog')
+    .modal-dialog
+      .modal-content
+        .modal-header
+          button.close(type='button', data-dismiss='modal', aria-label='Close')
+            span(aria-hidden='true') &times;
+          h4.modal-title Create a Travelogue
+        .modal-body
+          form#add-log-form(action='/crud/travelogue/', enctype='multipart/form-data')
+            input#visitdate(name='visitdate', type='hidden')
+            .form-group#form-group-content
+              label(for='content') Content (10,000 chars max.)
+              textarea.form-control.log-edit-content(name='content', placeholder='Log content')
+            .form-group#form-group-date
+              label(for='visitdate') Date
+              input#date.form-control(name='date', type='date')
+            .form-group#form-group-time
+              label(for='visittime') Time
+              input#time.form-control(name='time', type='time')
+        .modal-footer
+          button.btn.btn-default(type='button', data-dismiss='modal') Cancel
+          button#btnSubmitNewTravelogue.btn.btn-primary(type='button') Create
+
+mixin imageuploadmodal()
+  div#imageuploadmodal.modal.fade(tabindex='-1', role='dialog')
+    .modal-dialog
+      .modal-content
+        .modal-header
+          button.close(type='button', data-dismiss='modal', aria-label='Close')
+            span(aria-hidden='true') &times;
+          h4.modal-title Upload Images
+        .modal-body
+          form#img-upload-form(action='/crud/travelogue_image/', enctype='multipart/form-data')
+            input#logid(name='logid', type='hidden', value='')
+            input#file(name='file', type='file', accept="image/*,video/*")
+        .modal-footer
+          button.btn.btn-default(type='button', data-dismiss='modal') Cancel
+          button#btnUploadImages.btn.btn-primary(type='button') Add Images
+
+mixin logeditbutton(log)
+  .dropdown
+    button#menu1.close.btn.btn-default.dropdown-toggle(type='button', data-toggle='dropdown')
+      span.glyphicon.glyphicon-cog
+    ul.dropdown-menu.dropdown-menu-right(role='menu', aria-labelledby='menu1')
+      li(role='presentation')
+        a.btnAddPictures(role='menuitem', tabindex='-1', href='#/') Add Pictures
+      li(role='presentation')
+        a.btnSetLocation(role='menuitem', tabindex='-1', href='#/') Edit Location
+      li(role='presentation')
+        a.btnEditLog(role='menuitem', tabindex='-1', href='#/') Edit Content
+      li.divider(role='presentation')
+      li(role='presentation')
+        a.btnShareLog(role='menuitem', tabindex='-1', href='#/') Share
+      li.divider(role='presentation')
+      li(role='presentation')
+        a.btnRemovePictures(role='menuitem', tabindex='-1', href='#/') Remove Pictures
+      li(role='presentation')
+        a.btnDeleteLog(role='menuitem', tabindex='-1', href='#/') Delete
+
+//- The actual map for a location, given a Location bean.
+mixin location(loc)
+  h2=loc.name
+  div.placemap(data-latitude=loc.latitude, data-longitude=loc.longitude, data-zoom=12)
+
+//- A region that may or may not contain a map based on whether the travelogue has a map, and also the controls for editing the map
+mixin locationArea(t)
+  if t.locationid != -1
+    +location(t.location)
+  else
+    div.placemap.editable.hidden(data-zoom=3)
+  div.locationEdit.hidden
+    button.btn.btn-primary.btnSaveLocation Save Location
+
+mixin travel(t, readonly)
+  - readonly = readonly || false;
+  .travelogue.panel.panel-default(data-log-id="#{t.id}")
+    .panel-body
+      if !readonly
+        +logeditbutton(t)
+        
+      +locationArea(t)
+      
+      if t.visitDate
+        h4= _.getFormattedDate(t.visitDate.getTime())
+      
+      //- Add images, if any
+      - var logimgs = t.getImages()
+      if logimgs.size() > 0
+        +logimgs2(logimgs, t.id)
+      
+      div.log-content= t.content
+      textarea.log-edit-content(style="display:none")
+      
+      .log-btns.btn-toolbar.pull-right(style="display:none")
+        button.btnSaveLog.btn.btn-primary Save
+        button.btnCancelLog.btn.btn-default Cancel
+
+mixin loginform()
+  if (error == "wrong")
+    h2.text-danger Invalid username / password
+  if (error == "mustlogin")
+    h2.text-danger You must be logged in to view this page.
+  
+  form(method="GET", action="/form/login/")
+    .form-group
+      label(for="username") Username
+      input.form-control(type="text", name="username", id="username")
+    .form-group
+      label(for="password") Password
+      input.form-control(type="password", name="password", id="password")
+    button.btn.btn-default(type="submit") Login
+
+mixin registerform()
+  if (error == "short")
+    h2.text-danger Password too short
+  if (error == "exists")
+    h2.text-danger Username already exists
+  
+  form(method="GET", action="/form/register/")
+    .form-group
+      label(for="username") Username
+      input.form-control(type="text", name="username", id="username")
+    .form-group
+      label(for="password") Password
+      span  (must be at least 6 characters long)
+      input.form-control(type="password", name="password", id="password")
+    button.btn.btn-default(type="submit") Register

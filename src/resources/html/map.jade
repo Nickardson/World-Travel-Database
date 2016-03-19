@@ -1,0 +1,11 @@
+include mixins/mixins.jade
+
+html
+  body
+    include head.jade
+    div Click to choose the location.
+    
+    div.placemap(data-latitude=22, data-longitude=-81)
+    
+    script(src="/js/map.js")
+    script(async, defer, src="https://maps.googleapis.com/maps/api/js?callback=initMaps")
