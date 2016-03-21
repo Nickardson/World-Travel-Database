@@ -5,8 +5,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import edu.seminolestate.gratzer.wtd.Main;
-
 /**
  * Manages updates to a Database.
  * @author Taylor
@@ -93,9 +91,9 @@ public class DBUpdater {
 				connection.setAutoCommit(false);
 
 				try {
+					DBUtil.setUserVersion(connection, bestUpdaterVersion);
 					bestUpdater.update(connection);
 					currentVersion = bestUpdaterVersion;
-					DBUtil.setUserVersion(connection, bestUpdaterVersion);
 				} catch(Exception e) {
 					System.out.println("Exception while updating! Reverting back...");
 					connection.rollback();

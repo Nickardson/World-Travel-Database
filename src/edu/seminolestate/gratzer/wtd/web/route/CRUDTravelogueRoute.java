@@ -55,39 +55,24 @@ public class CRUDTravelogueRoute extends AbstractHandler {
 				}
 			}
 			
-			// TODO: add shared and locationid
+			// TODO: test shared and locationid
+			boolean shared = false;
+			if (session.getParms().containsKey("shared")) {
+				shared = Boolean.parseBoolean(session.getParms().get("shared"));
+			}
 			
+			int locationid = Travelogue.NO_ID;
+			if (session.getParms().containsKey("locationid")) {
+				locationid = Integer.parseInt(session.getParms().get("locationid"));
+			}
 			
-			Travelogue log = new Travelogue(Travelogue.NO_ID, login.getUserID(), content, date);
+			Travelogue log = new Travelogue(Travelogue.NO_ID, login.getUserID(), content, date, shared, locationid);
 			try {
 				log.create(Main.dbConnection);
 				return NanoHTTPD.newFixedLengthResponse("success");
 			} catch (SQLException e) {
 				e.printStackTrace();
 				return NanoHTTPD.newFixedLengthResponse(Status.INTERNAL_ERROR, "text/plain", "sql error");
-			}
-		} else if (session.getMethod() == Method.GET) {
-			// READ log
-			// ex: GET /crud/travelogue/312
-			// currently not implemented because data provider gives it directly from database query to the template.
-			
-			String idString = urlParams.get("id");
-			if (idString != null) {
-				// TODO: authorization
-				
-//				int id = Integer.parseInt(idString);
-//				
-//				try {
-//					// TODO: implement output once I figure out what I want here
-//					Travelogue log = new Travelogue(id).read(Main.dbConnection);					
-//				} catch (SQLException e) {
-//					e.printStackTrace();
-//					return NanoHTTPD.newFixedLengthResponse(Status.INTERNAL_ERROR, "text/plain", "sql error");
-//				}
-				
-				return NanoHTTPD.newFixedLengthResponse(Status.NOT_IMPLEMENTED, NanoHTTPD.MIME_PLAINTEXT, "Method not supported.");
-			} else {
-				return NanoHTTPD.newFixedLengthResponse(Status.BAD_REQUEST, "text/plain", "no id provided");
 			}
 		} else if (session.getMethod() == Method.PUT) {
 			// UPDATE log
@@ -132,7 +117,6 @@ public class CRUDTravelogueRoute extends AbstractHandler {
 								}
 							}
 							
-							// TODO: add shared and locationid
 							if (session.getParms().containsKey("shared")) {
 								log.setShared(Boolean.parseBoolean(session.getParms().get("shared")));
 								changed = true;

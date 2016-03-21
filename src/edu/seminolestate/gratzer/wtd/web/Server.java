@@ -150,7 +150,6 @@ public class Server extends RouterNanoHTTPD {
 	public void addMappings() {
 		super.addMappings();
 		
-		// file serving routes
 		
 		// form routes
 		addRoute("/form/register/", RegisterRoute.class);
@@ -169,6 +168,10 @@ public class Server extends RouterNanoHTTPD {
 		addRoute("/crud/location/?", CRUDLocationRoute.class);
 		addRoute("/crud/location/:id", CRUDLocationRoute.class);
 		
+		// ajax routes
+		addRoute("/ajax/locations", LocationPresetRoute.class);
+		
+		// file serving routes
 		addRoute("/", JadeRendererRoute.class);
 		addRoute("/:path", JadeRendererRoute.class);
 		addRoute("/img/(.)+", StaticPageHandler.class, new File("img").getAbsoluteFile());

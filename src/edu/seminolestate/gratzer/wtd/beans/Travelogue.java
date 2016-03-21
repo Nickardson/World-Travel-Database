@@ -117,6 +117,12 @@ public class Travelogue implements IBean<Travelogue> {
 		return IBean.executeQuery(TravelogueImage.class, query);
 	}
 	
+	/**
+	 * Returns the Location bean, if any, for this Travelogue.
+	 * @return The Location, or null if no location exists.
+	 * @throws SQLException
+	 * @date 2016-03-06
+	 */
 	public Location getLocation() throws SQLException {
 		if (getLocationid() != Location.NO_ID) {
 			PreparedStatement query = Main.dbConnection.prepareStatement("SELECT * FROM locations WHERE id = ?");
@@ -240,7 +246,12 @@ public class Travelogue implements IBean<Travelogue> {
 			} else {
 				this.setVisitDate(null);
 			}
-		} catch (ParseException e) {}
+		} catch (ParseException e) {
+			
+		} catch (NumberFormatException e) {
+			
+		}
+		
 		
 		// Database Version 2
 		if (DBUtil.getUserVersion(Main.dbConnection) >= 2) {

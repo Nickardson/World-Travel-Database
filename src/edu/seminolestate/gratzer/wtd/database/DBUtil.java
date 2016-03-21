@@ -5,6 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.WeakHashMap;
 
 import edu.seminolestate.gratzer.wtd.Main;
 
@@ -40,13 +41,20 @@ public class DBUtil {
 		return false;
 	}
 	
+	private static WeakHashMap<Connection, Integer> versionCache = new WeakHashMap<Connection, Integer>();
+	
 	/**
 	 * Gets the version field of the database.
 	 * @param connection The connection to the database
 	 * @return The version of the database
 	 * @throws SQLException
+	 * @date 2016-03-20 Added a cache to fix problems with version not updating until after transactions are finished
 	 */
 	public static int getUserVersion(Connection connection) throws SQLException {
+		if (versionCache.containsKey(connection)) {
+			return versionCache.get(connection);
+		}
+		
 		PreparedStatement get = connection.prepareStatement("PRAGMA user_version");
 		ResultSet rs = get.executeQuery();
 		
@@ -56,6 +64,8 @@ public class DBUtil {
 		}
 		rs.close();
 		
+		versionCache.put(connection, result);
+		
 		return result;
 	}
 	
@@ -64,10 +74,13 @@ public class DBUtil {
 	 * @param connection The connection to the database
 	 * @param version The new version of the database
 	 * @throws SQLException
+	 * @date 2016-03-20 Added a cache to fix problems with version not updating until after transactions are finished 
 	 */
 	public static void setUserVersion(Connection connection, int version) throws SQLException {
 		PreparedStatement statement = connection.prepareStatement("PRAGMA user_version = " + version);
 		statement.executeUpdate();
+		
+		versionCache.put(connection, version);
 	}
 
 	/**
@@ -104,7 +117,7 @@ public class DBUtil {
 			statement.executeUpdate("ALTER TABLE " + table + " RENAME TO _temp" + table);
 			statement.executeUpdate(sql);
 			
-			// TODO: confirm copyed data
+			// TODO: confirm copied data
 			System.out.println("Insert from migrate: " + statement.executeUpdate("INSERT INTO " + table + " SELECT * FROM _temp" + table));
 			
 			statement.executeUpdate("DROP TABLE _temp" + table);

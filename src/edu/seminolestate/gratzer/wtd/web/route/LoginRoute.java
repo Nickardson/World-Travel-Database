@@ -46,6 +46,9 @@ public class LoginRoute extends AbstractHandler {
 		} catch (SQLException e) {
 			e.printStackTrace();			
 			return NanoHTTPD.newFixedLengthResponse(Status.INTERNAL_ERROR, NanoHTTPD.MIME_HTML, "Internal SQL error, please contact your server administrator.");
+		} catch (IndexOutOfBoundsException e) {
+			// @date 2016-03-20 fix poor error message on invalid username 
+			return Server.newRedirectResponse("/login?error=wrong");
 		}
 	}
 }

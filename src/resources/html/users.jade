@@ -1,0 +1,21 @@
+include mixins/mixins.jade
+
+doctype html
+html
+  head
+    title World Travel Database
+    +favicons
+  body
+    include head.jade
+    style
+      include style.css
+
+    if users
+      h3 Registered Users
+      ul
+        for user in users
+          li #{user.username} - #{user.logcount} logs
+    else
+      h3 No users detected.
+
+    include footer.html

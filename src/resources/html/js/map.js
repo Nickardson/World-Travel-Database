@@ -11,13 +11,16 @@ function initMaps() {
 		}
 		
 		var gmap = new google.maps.Map(map[0], options);
+		gmap.setMarker = function (pos) {
+			placeMarker(pos, gmap, map);
+		}
 		
 		google.maps.event.addListener(gmap, 'click', function(e) {
 			if (map.parent().hasClass("editable")) {
 				placeMarker(e.latLng, gmap, map);
 				
 				// TODO: bit of a hack to update when dragged or new
-				$(map).closest(".travelogue").find(".btnSaveLocation").click();				
+				// $(map).closest(".travelogue").find(".btnSaveLocation").click();				
 			}
 		});
 		
@@ -48,7 +51,7 @@ function initMaps() {
 			$(element).data("longitude", gmap.marker.getPosition().lng());
 			
 			// TODO: bit of a hack to update when dragged or new
-			$(element).closest(".travelogue").find(".btnSaveLocation").click();
+			// $(element).closest(".travelogue").find(".btnSaveLocation").click();
 		});
 		
 		// map.panTo(position);

@@ -2,14 +2,6 @@ $("#btnAddTravelogue").click(function() {
 	$("#addlogmodal").modal();
 });
 
-function pad(a) {
-	if (a < 10) {
-		return "0" + a;
-	} else {
-		return a;
-	}
-}
-
 $("#btnSubmitNewTravelogue").click(function(e) {
 	e.preventDefault();
 
@@ -22,16 +14,8 @@ $("#btnSubmitNewTravelogue").click(function(e) {
 			$('#form-group-date,#form-group-time').addClass("has-error");
 			return;
 		}
-
-		// var str = date.getUTCFullYear() + "-" +
-		// pad(1 + date.getUTCMonth()) + "-" +
-		// pad(date.getDate()) + " " +
-		// pad(date.getHours()) + ":" + pad(date.getMinutes()) + ":" +
-		// pad(date.getSeconds());
-
+		
 		$("#visitdate").val(date.valueOf());
-		// console.log(date, date.valueOf());
-		// console.log(str);
 	} else {
 		$("#visitdate").val("");
 	}
@@ -56,11 +40,13 @@ $("#btnSubmitNewTravelogue").click(function(e) {
 	});
 });
 
+// register images for fancybox
 $(".expandable").fancybox({
 	openEffect : 'none',
 	closeEffect : 'none'
 });
 
+// update the content of a log
 $(".btnSaveLog").click(function() {
 	var log = $(this).closest(".travelogue");
 
@@ -84,6 +70,7 @@ $(".btnSaveLog").click(function() {
 	box.val();
 });
 
+// cancel updating the content of a log
 $(".btnCancelLog").click(function() {
 	var log = $(this).closest(".travelogue");
 
@@ -92,6 +79,7 @@ $(".btnCancelLog").click(function() {
 	log.find(".log-btns").css("display", "none");
 });
 
+// show prompt for adding pictures
 $(".btnAddPictures").click(function() {
 	var log = $(this).closest(".travelogue");
 
@@ -99,6 +87,23 @@ $(".btnAddPictures").click(function() {
 	$("#imageuploadmodal").modal("show");
 	$("#logid").val(log.data("log-id"));
 });
+
+var locations;
+
+/**
+ * Populates the given location selector with the cached values from "locations"
+ * 
+ * @param select
+ *            The select element to add options to
+ */
+function populateLocationSelect(select) {
+	$(select).empty();
+	$(select).append($("<option>").text("").val(-1));
+	for (var i = 0; i < locations.length; i++) {
+		var loc = locations[i];
+		$(select).append($("<option>").text(loc.name).val(i));
+	}
+}
 
 $(".btnSetLocation").click(function() {
 	var log = $(this).closest(".travelogue");
@@ -114,69 +119,133 @@ $(".btnSetLocation").click(function() {
 	map.panTo(centerPoint);
 
 	// update the marker to look draggable
-	map.marker.setDraggable(true);
-	map.marker.setCursor("move");
+	if (map.marker) {
+		map.marker.setDraggable(true);
+		map.marker.setCursor("move");
+	}
+
+	// read and cache location list, if not already loaded
+	if (locations == undefined) {
+		$.getJSON("/ajax/locations").success(function(data) {
+			locations = data.locations;
+
+			populateLocationSelect(log.find(".inputLocationPreset"));
+		});
+	} else {
+		populateLocationSelect(log.find(".inputLocationPreset"));
+	}
 });
 
-$(".btnSaveLocation").click(function() {
-	var log = $(this).closest(".travelogue");
-	var map = $(log).find(".map");
+$(".inputLocationPreset").change(function(e) {
+	if ($(this).val() != -1) {
+		var loc = locations[$(this).val()];
 
-	var lat = map.data("latitude");
-	var lng = map.data("longitude");
+		var log = $(this).closest(".travelogue");
+		var map = $(log).find(".map").data("map");
 
-	// TODO: create a 'Location'
-	// TODO: creating a new location every time is temporary, there should be a
-	// whole editing and choosing thing for locations
-	$.ajax({
-		url : "/crud/location/",
-		type : 'POST',
-		data : {
-			name : 'Map', // TODO: allow new name
-			latitude : lat,
-			longitude : lng,
-			shared : false
-		// TODO: allow sharing
-		}
-	}).done(function(id, a, b) {
-		// once the location is created, read the id from the response
-		console.log("done creating location", id, a, b);
-		
-		// and update the existing travelogue
-		var locationid = parseInt(id);
+		var pos = new google.maps.LatLng(loc.latitude, loc.longitude);
+		map.panTo(pos);
+		map.setMarker(pos);
+		log.find(".inputLocationName").val(loc.name);
+	}
+})
 
-		$.ajax({
-			url : "/crud/travelogue/" + log.data("log-id"),
-			type : 'PUT',
-			data : {
-				locationid : locationid
+$(".btnSaveLocation").click(
+		function() {
+			var log = $(this).closest(".travelogue");
+			var map = $(log).find(".map");
+
+			var lat = map.data("latitude");
+			var lng = map.data("longitude");
+
+			// the id of the location, or -1 if there is none
+			var locationId = parseInt(log.find(".inputLocationId").val());
+
+			// whether this user is the owner of the location object
+			var isOwner = log.find(".inputLocationOwner").val() == "true";
+
+			var data = {
+				name : log.find(".inputLocationName").val(),
+				latitude : lat,
+				longitude : lng,
+				shared : log.find(".inputLocationShared").is(":checked")
+			};
+
+			console.log(log.find(".inputLocationId"), log.find(
+					".inputLocationId").val(), "Locationid", locationId,
+					"isOwner", isOwner, data);
+
+			var options;
+			if (locationId == -1 || !isOwner) {
+				console.log("Attempting to create new location");
+				options = {
+					url : "/crud/location/",
+					type : 'POST',
+					data : data
+				};
+			} else {
+				console.log("Attempting to update existing location");
+				options = {
+					url : "/crud/location/" + locationId,
+					type : 'PUT',
+					data : data
+				};
 			}
-		}).done(function(e) {
-			console.log("done updating travelogue location", e);
-			window.location.reload();
-		}).error(function(e) {
-			console.log("error updating travelogue location", e);
+
+			$.ajax(options).done(function(id, a, b) {
+				// once the location is created, read the id from the response
+				console.log("done creating location", id, a, b);
+
+				// and update the existing travelogue
+				var locationid = parseInt(id);
+
+				$.ajax({
+					url : "/crud/travelogue/" + log.data("log-id"),
+					type : 'PUT',
+					data : {
+						locationid : locationid
+					}
+				}).done(function(e) {
+					console.log("done updating travelogue location", e);
+					window.location.reload();
+				}).error(function(e) {
+					console.log("error updating travelogue location", e);
+				});
+
+				window.location.reload();
+			}).error(function(e) {
+				console.log("error updating", e);
+			});
+
+			$(log).find(".locationEdit").addClass("hidden");
 		});
 
-		window.location.reload();
-	}).error(function(e) {
-		console.log("error updating", e);
-	});
+$(".btnRemoveLocation").click(function() {
+	var log = $(this).closest(".travelogue");
 
-	// $.ajax({
-	// url: "/crud/travelogue/" + log.data("log-id"),
-	// type: 'PUT',
-	// data: {
-	// content: box.val()
-	// }
-	// }).done(function (e) {
-	// console.log("done updating",e);
-	// window.location.reload();
-	// }).error(function (e) {
-	// console.log("error updating",e);
-	// });
+	var locationId = parseInt(log.find(".inputLocationId").val());
 
-	$(log).find(".locationEdit").addClass("hidden");
+	if (confirm("Are you sure you want to remove the location from this travelogue?")) {
+		$.ajax({
+			url : "/crud/location/" + locationId,
+			type : 'DELETE'
+		}).done(function(e) {
+			console.log("done removing travelogue location", e);
+
+			$.ajax({
+				url : "/crud/travelogue/" + log.data("log-id"),
+				type : 'PUT',
+				data : {
+					locationid : -1
+				}
+			}).done(function(e) {
+				console.log("done updating travelogue location", e);
+				window.location.reload();
+			}).error(function(e) {
+				console.log("error updating travelogue location", e);
+			});
+		});
+	}
 });
 
 $("#btnUploadImages").click(function(e) {
@@ -218,14 +287,31 @@ function qualifyURL(url) {
 	return a.cloneNode(false).href;
 }
 
-$(".btnShareLog").click(
-		function() {
-			var log = $(this).closest(".travelogue");
+$(".btnShareLog").click(function(e) {
+	e.stopPropagation();
+	
+	var log = $(this).closest(".travelogue");
 
-			console.log("Sharing log", log.data('log-id'));
-			prompt("Give this link to your friends:",
-					qualifyURL('/travelogue?id=' + log.data('log-id')));
-		});
+	var that = $(this);
+	var oldText = that.text();
+	that.text("Please wait...");
+	
+	
+	$.ajax({
+		url : '/crud/travelogue/' + log.data("log-id"),
+		method: 'PUT',
+		data: {
+			shared: true
+		}
+	}).done(function () {
+		console.log("Done updating preferences");
+		prompt("Give this link to your friends:", qualifyURL('/travelogue?id=' + log.data('log-id')));
+	}).always(function() {
+		that.text(oldText);
+	});
+	
+	console.log("Sharing log", log.data('log-id'));
+});
 
 $(".btnRemovePictures").click(
 		function() {

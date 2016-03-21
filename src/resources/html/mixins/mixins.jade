@@ -1,5 +1,5 @@
 mixin favicons
-  link(rel="shortcut icon", href="favicon.ico" type="image/x-icon")
+  link(rel="shortcut icon", href="/favicon.ico" type="image/x-icon")
 
 mixin logimgs2(imgs, id)
   .well.log-images
@@ -81,6 +81,8 @@ mixin logeditbutton(log)
       li(role='presentation')
         a.btnRemovePictures(role='menuitem', tabindex='-1', href='#/') Remove Pictures
       li(role='presentation')
+        a.btnRemoveLocation(role='menuitem', tabindex='-1', href='#/') Remove Location
+      li(role='presentation')
         a.btnDeleteLog(role='menuitem', tabindex='-1', href='#/') Delete
 
 //- The actual map for a location, given a Location bean.
@@ -90,11 +92,28 @@ mixin location(loc)
 
 //- A region that may or may not contain a map based on whether the travelogue has a map, and also the controls for editing the map
 mixin locationArea(t)
+  - loc = t.location
+  input(type="hidden", class="inputLocationOwner", id="locationowner" + t.locationid, value=loc.ownerid == userid ? "true" : "false")
+  input(type="hidden", class="inputLocationId", id="locationid" + t.locationid, value=t.locationid)
+  
   if t.locationid != -1
-    +location(t.location)
+    +location(loc)
   else
     div.placemap.editable.hidden(data-zoom=3)
   div.locationEdit.hidden
+    label(for="locationpreset" + t.locationid) Use a Preset Location - This will override your current settings.
+    select(class="form-control inputLocationPreset", id="locationpreset" + t.locationid)
+    hr
+    
+    h3 Editing this location, you can click a new point on the map.
+    label(for="location" + t.locationid) Location Name
+    input(type="text", class="inputLocationName form-control" id="location" + t.locationid, value=loc.name)
+    
+    .checkbox
+      label(for="locationshare" + t.locationid)
+        input(type="checkbox", class="inputLocationShared" id="locationshare" + t.locationid, checked=loc.shared ? "checked" : undefined)
+        | Share this location with other users
+    br
     button.btn.btn-primary.btnSaveLocation Save Location
 
 mixin travel(t, readonly)
@@ -151,3 +170,12 @@ mixin registerform()
       span  (must be at least 6 characters long)
       input.form-control(type="password", name="password", id="password")
     button.btn.btn-default(type="submit") Register
+
+mixin landingpage()
+  .intro-header
+    .container
+      .row
+        .col-lg-12
+          .intro-message
+            h1 World Travel Database
+            h3 Case Study in Buisness Programming project 

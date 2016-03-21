@@ -12,21 +12,26 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
+import mjson.Json;
+
 import org.sqlite.SQLiteConfig;
 
 import edu.seminolestate.gratzer.wtd.beans.IBean;
+import edu.seminolestate.gratzer.wtd.beans.Location;
 import edu.seminolestate.gratzer.wtd.beans.Travelogue;
 import edu.seminolestate.gratzer.wtd.beans.TravelogueImage;
 import edu.seminolestate.gratzer.wtd.beans.User;
+import edu.seminolestate.gratzer.wtd.beans.UserInfo;
 import edu.seminolestate.gratzer.wtd.database.DBUpdater;
 import edu.seminolestate.gratzer.wtd.database.DBUtil;
-import edu.seminolestate.gratzer.wtd.database.updates.*;
+import edu.seminolestate.gratzer.wtd.database.updates.Update_0_1;
+import edu.seminolestate.gratzer.wtd.database.updates.Update_1_2;
 import edu.seminolestate.gratzer.wtd.ui.Tray;
 import edu.seminolestate.gratzer.wtd.web.LoginSession;
 import edu.seminolestate.gratzer.wtd.web.PageProvider;
@@ -43,37 +48,6 @@ import fi.iki.elonen.router.RouterNanoHTTPD.UriResource;
  * Application is written in Java (obviously), using SQLite for a single-file database.
  * Jade4J is used to render Jade templates for most pages.
  * The web server is created through a slightly modified NanoHTTPD
- * 
- * database.updates.Update_0_1 contains the SQL code used to create the tables.
- * 
- * Code Grade Sheet info:
- * 1.) Excluding the user table, there are currently two relational tables.
- * 
- * 2.) The master table is the Travelogues table. Currently one table has a foreign key relation to the master table - the Travel_images table.
- * 
- * 3.) Fields:
- *     alphanumeric/character: users.username, travelogues.content, travel_images.filename
- *     decimal numeric: N/A currently
- *     integer numeric: table ids, and foreign key ids.
- *     logical: users.admin
- *     date: travelogues.visitdate
- * 
- * 4.) Master table currently has 4 columns.
- * 
- * 5.) Validation is in place for most fields, along with foreign keys with referential integrity, unique constraints, and cascading deletes.
- * 
- * 6.) The main travelogue page joins Travelogues and Travel_Images
- * 
- * 7.) The travelogue database is pre-initialized with some data if you are in the admin account and view the main page.
- * 
- * 8.) Travelogue images are displayed in the travelogue listing.
- * 
- * 9.) Currently in progress, but the content of the databases can be viewed by logging in as administrator and viewing http://localhost:8080/debug
- * 
- * 10.) Currently in progress.
- *     Users can be 		CRU.
- *     Travelogues can be 	CRUD, except for the date currently.
- *     Travel_Images can be	CRD. (are images a special case, or should they be 'replaceable' in order to update?
  * 
  * @author Taylor
  * @date 2016-02-14
@@ -157,6 +131,9 @@ public class Main {
 			updater.update();
 			LOG.info("Database Version: " + DBUtil.getUserVersion(dbConnection));
 			
+			// @date 2016-03-20 registers a factory for JSON objects, which allows convertable beans, etc.
+			Json.setGlobalFactory(new CustomJsonFactory());
+			
 			// Register data providers for Jade Pages
 			LOG.info("Registering Page Populators");
 			PageProvider.register(new Populator() {
@@ -192,6 +169,10 @@ public class Main {
 							model.put("users", IBean.executeQuery(User.class, Main.dbConnection.prepareStatement("SELECT * FROM users")));
 							model.put("travelogues", IBean.executeQuery(Travelogue.class, Main.dbConnection.prepareStatement("SELECT * FROM travelogues")));
 							model.put("images", IBean.executeQuery(TravelogueImage.class, Main.dbConnection.prepareStatement("SELECT * FROM travel_images")));
+							
+							// @date 2016-03-20 Add locations to debug view 
+							model.put("locations", IBean.executeQuery(Location.class, Main.dbConnection.prepareStatement("SELECT * FROM locations")));
+							
 							model.put("properties", Main.properties);
 							
 							try {
@@ -207,6 +188,19 @@ public class Main {
 				}
 			}, "/resources/html/debug.jade");
 			
+			// @date 2016-03-20 reads from the view "userinfo", and provides the list of names
+			PageProvider.register(new Populator() {
+				@Override
+				public void populate(Map<String, Object> model, UriResource uriResource, Map<String, String> urlParams, IHTTPSession session) {
+					try {
+						List<UserInfo> viewUsers = IBean.executeQuery(UserInfo.class, Main.dbConnection.prepareStatement("SELECT * FROM userinfo ORDER BY logcount DESC"));
+						model.put("users", viewUsers);
+					} catch (SQLException e) {
+					}					
+				}
+			}, "/resources/html/users.jade");
+			
+			// @date 2016-03-20 A new page for shared travelogues
 			PageProvider.register(new Populator() {
 				@Override
 				public void populate(Map<String, Object> model, UriResource uriResource, Map<String, String> urlParams, IHTTPSession session) {
@@ -217,27 +211,19 @@ public class Main {
 						
 						LoginSession login = Server.getLoginSession(session);
 						
-						// if not the verified owner, is readonly
+						// if not the verified owner, is readonly, which means it won't bother showing the gear
 						if (login == null || login.getUserID() != log.getOwnerid()) {
-							if (login == null) {
-								// TODO: use readonly in the UI
-								model.put("readonly", true);
-							}
+							model.put("readonly", true);
 							
 							// if log is not shared and user is not authorized, unauthorize them
 							if (!log.isShared()) {
 								model.put("unauthorized", true);
 								return;
-							}							
+							}
 						}
 						
 						if (session.getParms().containsKey("id")) {
-							try {
-								model.put("log", log);
-							} catch (Exception e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
-							}						
+							model.put("log", log);
 						}
 					} catch (SQLException e1) {
 						e1.printStackTrace();

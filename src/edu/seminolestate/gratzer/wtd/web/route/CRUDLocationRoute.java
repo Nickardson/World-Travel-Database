@@ -15,9 +15,9 @@ import fi.iki.elonen.NanoHTTPD.Response.Status;
 import fi.iki.elonen.router.RouterNanoHTTPD.UriResource;
 
 /**
- * A route which CRUDs a TravelogueImage
+ * A route which CRUDs a Location
  * @author Taylor
- * @date 2016-02-13
+ * @date 2016-03-20
  */
 public class CRUDLocationRoute extends AbstractHandler {
 	@Override
@@ -54,7 +54,6 @@ public class CRUDLocationRoute extends AbstractHandler {
 			}
 		} else if (session.getMethod() == Method.PUT) {
 			// UPDATE location
-			// TODO: update
 			
 			String idString = urlParams.get("id");
 			if (idString != null) {
@@ -77,9 +76,9 @@ public class CRUDLocationRoute extends AbstractHandler {
 					boolean changed = false;
 					
 					String name = session.getParms().get("name");
-					if (name != null) {
-						changed = true;
+					if (name != null && name.length() > 0) {
 						location.setName(name);
+						changed = true;
 					}
 					
 					if (session.getParms().containsKey("latitude")) {
@@ -99,7 +98,7 @@ public class CRUDLocationRoute extends AbstractHandler {
 					
 					if (changed) {
 						location.update(Main.dbConnection);
-						System.out.println("Success updating location " + location);
+						return NanoHTTPD.newFixedLengthResponse(Integer.toString(location.getId()));
 					} else {
 						return NanoHTTPD.newFixedLengthResponse(Status.INTERNAL_ERROR, "text/plain", "no change");
 					}
@@ -107,12 +106,13 @@ public class CRUDLocationRoute extends AbstractHandler {
 				} catch (SQLException e) {
 					e.printStackTrace();
 					return NanoHTTPD.newFixedLengthResponse(Status.INTERNAL_ERROR, "text/plain", "sql error");
+				} catch (NumberFormatException e) {
+					// @date 2016-03-12 Although the fields are not exposed to direct user input, catches number format with special message
+					return NanoHTTPD.newFixedLengthResponse(Status.INTERNAL_ERROR, "text/plain", "input error");
 				}
 			} else {
 				return NanoHTTPD.newFixedLengthResponse(Status.INTERNAL_ERROR, "text/plain", "no id provided");
 			}
-			
-			return NanoHTTPD.newFixedLengthResponse("");
 		} else if (session.getMethod() == Method.DELETE) {
 			// DELETE location
 			// "id": (int) the id of the location to delete

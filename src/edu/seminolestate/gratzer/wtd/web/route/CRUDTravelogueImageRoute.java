@@ -127,12 +127,18 @@ public class CRUDTravelogueImageRoute extends AbstractHandler {
 			// DELETE image
 			// "id": (int) the id of the image to delete
 			
-			// TODO: confirm user owns image
+			// TODO: test the confirmation that user owns image
 			String idString = urlParams.get("id");
 			int id = Integer.parseInt(idString);
 			
 			try {
-				new TravelogueImage(id).delete(Main.dbConnection);
+				TravelogueImage image = new TravelogueImage(id);
+				Travelogue parentLog = new Travelogue(image.getLogid());
+				if (parentLog.getOwnerid() != login.getUserID()) {
+					return NanoHTTPD.newFixedLengthResponse(Status.UNAUTHORIZED, NanoHTTPD.MIME_PLAINTEXT, "You do not own this log!");
+				}
+				
+				image.delete(Main.dbConnection);
 				return NanoHTTPD.newFixedLengthResponse(Status.OK, NanoHTTPD.MIME_PLAINTEXT, "");
 			} catch (SQLException e) {
 				e.printStackTrace();

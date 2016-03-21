@@ -73,8 +73,6 @@ public class Update_0_1 implements Updater {
 			userAdmin = new User(1).read(connection);
 		}
 		
-		// TODO: transactions like https://stackoverflow.com/questions/9601030/transaction-in-java-sqlite3
-		
 		// create logs
 		new Travelogue(
 				Travelogue.NO_ID, 

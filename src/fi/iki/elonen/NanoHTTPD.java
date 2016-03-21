@@ -834,11 +834,11 @@ public abstract class NanoHTTPD {
 
                 // Ok, now do the serve()
 
-                // TODO: long body_size = getBodySize();
-                // TODO: long pos_before_serve = this.inputStream.totalRead()
+                // NANOTODO: long body_size = getBodySize();
+                // NANOTODO: long pos_before_serve = this.inputStream.totalRead()
                 // (requires implementaion for totalRead())
                 r = serve(this);
-                // TODO: this.inputStream.skip(body_size -
+                // NANOTODO: this.inputStream.skip(body_size -
                 // (this.inputStream.totalRead() - pos_before_serve))
 
                 if (r == null) {
@@ -1436,9 +1436,16 @@ public abstract class NanoHTTPD {
                 outputStream.flush();
                 safeClose(this.data);
             } catch (IOException ioe) {
-                NanoHTTPD.LOG.log(Level.SEVERE, "Could not send response to the client", ioe);
+            	// @date 2016-03-20 send will only print out the "could not send response" once per startup.
+                if (!hasFailedToSendResponse) {
+            		hasFailedToSendResponse = true;
+            		NanoHTTPD.LOG.log(Level.SEVERE, "Could not send response to the client", ioe.getMessage());
+            	}
             }
         }
+        
+        // @date 2016-03-20 send method will only print out the "could not send response" once per startup.
+        private static boolean hasFailedToSendResponse = false;
 
         private void sendBodyWithCorrectTransferAndEncoding(OutputStream outputStream, long pending) throws IOException {
             if (this.requestMethod != Method.HEAD && this.chunkedTransfer) {

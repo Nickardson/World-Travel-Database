@@ -5,14 +5,16 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import mjson.Json;
+import edu.seminolestate.gratzer.wtd.IJsonable;
 import edu.seminolestate.gratzer.wtd.database.DBUtil;
 
 /**
- * A CRUD Bean for a TravelogueImage
+ * A CRUD Bean for a Location
  * @author Taylor
- * @date 2016-02-13
+ * @date 2016-03-20
  */
-public class Location implements IBean<Location> {
+public class Location implements IBean<Location>, IJsonable {
 	/**
 	 * Represents a 'null' ID.
 	 */
@@ -128,7 +130,7 @@ public class Location implements IBean<Location> {
 	
 	@Override
 	public Location update(Connection c) throws SQLException {
-		PreparedStatement p = c.prepareStatement("UPDATE locations SET ownerid = ?, name = ? latitude = ?, longitude = ?, shared = ? WHERE id = ?");
+		PreparedStatement p = c.prepareStatement("UPDATE locations SET ownerid = ?, name = ?, latitude = ?, longitude = ?, shared = ? WHERE id = ?");
 		p.setInt(1, getOwnerid());
 		p.setString(2, getName());
 		p.setDouble(3, getLatitude());
@@ -136,6 +138,9 @@ public class Location implements IBean<Location> {
 		p.setBoolean(5, isShared());
 		
 		p.setInt(6, getId());
+		
+		p.executeUpdate();
+		
 		return this;
 	}
 	
@@ -165,5 +170,16 @@ public class Location implements IBean<Location> {
 		return "Location [id=" + id + ", ownerid=" + ownerid + ", name=" + name
 				+ ", latitude=" + latitude + ", longitude=" + longitude
 				+ ", shared=" + shared + "]";
+	}
+
+	@Override
+	public Json toJSON() {
+		return Json.object()
+				.set("id", getId())
+				.set("ownerid", getOwnerid())
+				.set("name", getName())
+				.set("latitude", getLatitude())
+				.set("longitude", getLongitude())
+				.set("shared", isShared());
 	}
 }

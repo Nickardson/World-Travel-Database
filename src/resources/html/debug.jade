@@ -45,12 +45,16 @@ html
           td OwnerID
           td Content
           td Visit Date
+          td Shared
+          td Location ID
         for travelogue in travelogues
           tr
             td= travelogue.id
             td= travelogue.ownerid
             td= travelogue.content
             td= travelogue.visitDate
+            td= travelogue.shared
+            td= travelogue.locationid
       
       h4 Travel_Images
       table.table#travel_images
@@ -64,3 +68,18 @@ html
             td= img.logid
             td= img.filename
       
+      h4 Locations
+      table.table#locations
+        tr
+          td ID
+          td Name
+          td Latitude
+          td Longitude
+          td Shared
+        for loc in locations
+          tr
+            td= loc.id
+            td= loc.name
+            td= loc.latitude
+            td= loc.longitude
+            td= loc.shared
