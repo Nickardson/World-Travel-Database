@@ -55,6 +55,7 @@ public class Location implements IBean<Location>, IJsonable {
 		return ownerid;
 	}
 
+	// ownerid is already enforced to exist in database
 	public void setOwnerid(int ownerid) {
 		this.ownerid = ownerid;
 	}
@@ -71,7 +72,14 @@ public class Location implements IBean<Location>, IJsonable {
 		return latitude;
 	}
 
+	/**
+	 * @date 2016-04-03
+	 * Added constraint checks.
+	 */
 	public void setLatitude(double latitude) {
+		if (latitude < -90 || latitude > 90)
+			throw new IllegalArgumentException("Latitude must be between -90 and 90");
+		
 		this.latitude = latitude;
 	}
 
@@ -79,7 +87,14 @@ public class Location implements IBean<Location>, IJsonable {
 		return longitude;
 	}
 
+	/**
+	 * @date 2016-04-03
+	 * Added constraint checks.
+	 */
 	public void setLongitude(double longitude) {
+		if (longitude < -180 || longitude > 180)
+			throw new IllegalArgumentException("Longitude must be between -180 and 180");
+		
 		this.longitude = longitude;
 	}
 

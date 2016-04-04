@@ -127,6 +127,8 @@ mixin travel(t, readonly)
       
       if t.visitDate
         h4= _.getFormattedDate(t.visitDate.getTime())
+      if t.views
+        h4 #{t.views} views
       
       //- Add images, if any
       - var logimgs = t.getImages()

@@ -36,6 +36,7 @@ public class Travelogue implements IBean<Travelogue> {
 	Date visitdate;
 	boolean shared;
 	int locationid;
+	int views;
 	
 	public Travelogue() {
 	}
@@ -50,12 +51,21 @@ public class Travelogue implements IBean<Travelogue> {
 	
 	// Database Version 2
 	public Travelogue(int id, int ownerid, String content, Date visitdate, boolean shared, int locationid) {
+		this(id, ownerid, content, visitdate, shared, locationid, 0);
+	}
+	
+	/**
+	 * @date 2016-04-03
+	 * Added version 3
+	 */
+	public Travelogue(int id, int ownerid, String content, Date visitdate, boolean shared, int locationid, int views) {
 		this.id = id;
 		this.ownerid = ownerid;
 		this.content = content;
 		this.visitdate = visitdate;
 		this.shared = shared;
 		this.locationid = locationid;
+		this.views = views;
 	}
 
 	public int getId() {
@@ -70,6 +80,7 @@ public class Travelogue implements IBean<Travelogue> {
 		return ownerid;
 	}
 
+	// ownerid is validated in the database
 	public void setOwnerid(int ownerid) {
 		this.ownerid = ownerid;
 	}
@@ -78,7 +89,14 @@ public class Travelogue implements IBean<Travelogue> {
 		return content;
 	}
 
+	/**
+	 * @date 2016-04-03
+	 * Added constraint checks.
+	 */
 	public void setContent(String content) {
+		if (content.length() > 10_000)
+			throw new IllegalArgumentException("Content cannot exceed 10,000 characters.");
+		
 		this.content = content;
 	}
 
@@ -103,15 +121,44 @@ public class Travelogue implements IBean<Travelogue> {
 		return locationid;
 	}
 	
+	// locationid is validated in the database
 	public void setLocationid(int locationid) {
 		this.locationid = locationid;
 	}
 	
+	public int getViews() {
+		return views;
+	}
+
+	// views is validated in the database
+	public void setViews(int views) {
+		this.views = views;
+	}
+	
+	// @date 2016-04-03 added view counter
+	public boolean addView() {
+		try {
+			this.setViews(this.getViews() + 1);
+			// runs a simpler update query, rather than full-blown update call
+			PreparedStatement up = Main.dbConnection.prepareStatement("UPDATE travelogues SET views = ? WHERE id = ?");
+			up.setInt(1, this.getViews());
+			up.setInt(2, getId());
+			up.executeUpdate();
+			
+			return true;
+		} catch (Exception ignored) {
+			// views are not really important
+			return false;
+		}
+	}
+
 	/**
 	 * @return SELECTed list of TravelogueImages that belong to the Travelogue with this ID
 	 * @throws SQLException
 	 */
 	public List<TravelogueImage> getImages() throws SQLException {
+		this.addView();
+		
 		PreparedStatement query = Main.dbConnection.prepareStatement("SELECT * FROM travel_images WHERE logid = ?");
 		query.setInt(1, this.getId());
 		return IBean.executeQuery(TravelogueImage.class, query);
@@ -136,7 +183,9 @@ public class Travelogue implements IBean<Travelogue> {
 	@Override
 	public Travelogue create(Connection connection) throws SQLException {
 		PreparedStatement p;
-		if (DBUtil.getUserVersion(Main.dbConnection) >= 2) {
+		if (DBUtil.getUserVersion(Main.dbConnection) >= 3) {
+			p = connection.prepareStatement("INSERT INTO travelogues (id, ownerid, content, visitdate, shared, locationid, views) VALUES (?, ?, ?, ?, ?, ?, ?)");
+		} else if (DBUtil.getUserVersion(Main.dbConnection) >= 2) {
 			p = connection.prepareStatement("INSERT INTO travelogues (id, ownerid, content, visitdate, shared, locationid) VALUES (?, ?, ?, ?, ?, ?)");
 		} else {
 			p = connection.prepareStatement("INSERT INTO travelogues (id, ownerid, content, visitdate) VALUES (?, ?, ?, ?)");
@@ -167,6 +216,10 @@ public class Travelogue implements IBean<Travelogue> {
 			}
 		}
 		
+		if (DBUtil.getUserVersion(Main.dbConnection) >= 3) {
+			p.setInt(7, getViews());
+		}
+		
 		p.executeUpdate();
 		
 		this.setId(DBUtil.getLastRowID(connection));
@@ -191,35 +244,41 @@ public class Travelogue implements IBean<Travelogue> {
 	@Override
 	public Travelogue update(Connection c) throws SQLException {
 		PreparedStatement p;
-		if (DBUtil.getUserVersion(Main.dbConnection) >= 2) {
+		if (DBUtil.getUserVersion(Main.dbConnection) >= 3) {
+			p = c.prepareStatement("UPDATE travelogues SET ownerid = ?, content = ?, visitdate = ?, shared = ?, locationid = ?, views = ? WHERE id = ?");
+		} else if (DBUtil.getUserVersion(Main.dbConnection) >= 2) {
 			p = c.prepareStatement("UPDATE travelogues SET ownerid = ?, content = ?, visitdate = ?, shared = ?, locationid = ? WHERE id = ?");
 		} else {
 			p = c.prepareStatement("UPDATE travelogues SET ownerid = ?, content = ?, visitdate = ? WHERE id = ?");
 		}
 		
-		p.setInt(1, getOwnerid());
-		p.setString(2, getContent());
+		int INDEX = 1;
+		
+		p.setInt(INDEX++, getOwnerid());
+		p.setString(INDEX++, getContent());
 		if (getVisitDate() == null) {
-			p.setNull(3, Types.NULL);
+			p.setNull(INDEX++, Types.NULL);
 		} else {
-			p.setString(3, DATE_FORMAT.format(getVisitDate()));
+			p.setString(INDEX++, DATE_FORMAT.format(getVisitDate()));
 		}
 		
 		// Database Version 2
 		if (DBUtil.getUserVersion(Main.dbConnection) >= 2) {
-			p.setBoolean(4, isShared());
+			p.setBoolean(INDEX++, isShared());
 			
 			if (getLocationid() == NO_ID) {
-				p.setNull(5, Types.NULL);
+				p.setNull(INDEX++, Types.NULL);
 			} else {
-				p.setInt(5, getLocationid());
-			}
-			
-			p.setInt(6, getId());
-		} else {
-			p.setInt(4, getId());
+				p.setInt(INDEX++, getLocationid());
+			}			
 		}
 		
+		if (DBUtil.getUserVersion(Main.dbConnection) >= 3) {
+			System.out.println("version 3 w views " + this);
+			p.setInt(INDEX++, getViews());
+		}
+		
+		p.setInt(INDEX++, getId());
 		p.executeUpdate();
 		
 		return this;
@@ -265,6 +324,10 @@ public class Travelogue implements IBean<Travelogue> {
 			}			
 		}
 		
+		if (DBUtil.getUserVersion(Main.dbConnection) >= 3) {
+			this.setViews(rs.getInt("views"));
+		}
+		
 		return this;
 	}
 
@@ -280,6 +343,6 @@ public class Travelogue implements IBean<Travelogue> {
 		
 		return "Travelogue [id=" + id + ", ownerid=" + ownerid + ", content="
 				+ shortContent + ", visitdate=" + visitdate + ", shared=" + shared
-				+ ", locationid=" + locationid + "]";
+				+ ", locationid=" + locationid + ", views=" + views + "]";
 	}
 }

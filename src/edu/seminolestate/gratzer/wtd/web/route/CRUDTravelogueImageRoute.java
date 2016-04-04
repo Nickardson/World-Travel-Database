@@ -69,17 +69,18 @@ public class CRUDTravelogueImageRoute extends AbstractHandler {
 			int logid = Integer.parseInt(logidString);
 			
 			// TODO: allow admins to add always
+			// TODO: adjust strictness
 			// confirm that requesting user is allowed to add an image to this log.
-			try {
-				Travelogue log = new Travelogue(logid).read(Main.dbConnection);
-				
-				if (log.getOwnerid() != login.getUserID()) {
-					return NanoHTTPD.newFixedLengthResponse(Status.UNAUTHORIZED, NanoHTTPD.MIME_PLAINTEXT, "You do not own this log!");
-				}
-			} catch (SQLException e1) {
-				e1.printStackTrace();
-				return NanoHTTPD.newFixedLengthResponse(Status.INTERNAL_ERROR, NanoHTTPD.MIME_PLAINTEXT, "Internal server error, could not determine ownership.");
-			}
+//			try {
+//				Travelogue log = new Travelogue(logid).read(Main.dbConnection);
+//				
+//				if (log.getOwnerid() != login.getUserID()) {
+//					return NanoHTTPD.newFixedLengthResponse(Status.UNAUTHORIZED, NanoHTTPD.MIME_PLAINTEXT, "You do not own this log!");
+//				}
+//			} catch (SQLException e1) {
+//				e1.printStackTrace();
+//				return NanoHTTPD.newFixedLengthResponse(Status.INTERNAL_ERROR, NanoHTTPD.MIME_PLAINTEXT, "Internal server error, could not determine ownership.");
+//			}
 			
 			for (Entry<String, String> file : files.entrySet()) {
 				if (file.getKey().startsWith("file")) {
@@ -134,9 +135,10 @@ public class CRUDTravelogueImageRoute extends AbstractHandler {
 			try {
 				TravelogueImage image = new TravelogueImage(id);
 				Travelogue parentLog = new Travelogue(image.getLogid());
-				if (parentLog.getOwnerid() != login.getUserID()) {
-					return NanoHTTPD.newFixedLengthResponse(Status.UNAUTHORIZED, NanoHTTPD.MIME_PLAINTEXT, "You do not own this log!");
-				}
+				// TODO: adjust strictness
+//				if (parentLog.getOwnerid() != login.getUserID()) {
+//					return NanoHTTPD.newFixedLengthResponse(Status.UNAUTHORIZED, NanoHTTPD.MIME_PLAINTEXT, "You do not own this log!");
+//				}
 				
 				image.delete(Main.dbConnection);
 				return NanoHTTPD.newFixedLengthResponse(Status.OK, NanoHTTPD.MIME_PLAINTEXT, "");

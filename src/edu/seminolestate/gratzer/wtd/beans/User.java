@@ -61,7 +61,14 @@ public class User implements IBean<User> {
 		this.username = username;
 	}
 
+	/**
+	 * @date 2016-04-03
+	 * Added constraint checks.
+	 */
 	public void setPassword(String password) {
+		if (password == null || password.length() == 0)
+			throw new IllegalArgumentException("Password must be provided.");
+		
 		this.password = password;
 	}
 

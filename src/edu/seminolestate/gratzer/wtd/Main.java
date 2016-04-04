@@ -32,6 +32,7 @@ import edu.seminolestate.gratzer.wtd.database.DBUpdater;
 import edu.seminolestate.gratzer.wtd.database.DBUtil;
 import edu.seminolestate.gratzer.wtd.database.updates.Update_0_1;
 import edu.seminolestate.gratzer.wtd.database.updates.Update_1_2;
+import edu.seminolestate.gratzer.wtd.database.updates.Update_2_3;
 import edu.seminolestate.gratzer.wtd.ui.Tray;
 import edu.seminolestate.gratzer.wtd.web.LoginSession;
 import edu.seminolestate.gratzer.wtd.web.PageProvider;
@@ -51,6 +52,8 @@ import fi.iki.elonen.router.RouterNanoHTTPD.UriResource;
  * 
  * @author Taylor
  * @date 2016-02-14
+ * @date 2016-04-03
+ * Added Update_2_3 to update list.
  */
 public class Main {
 	private static Logger LOG = Logging.get(Main.class);
@@ -127,6 +130,7 @@ public class Main {
 			DBUpdater updater = new DBUpdater(dbConnection);
 			updater.addUpdater(new Update_0_1());
 			updater.addUpdater(new Update_1_2());
+			updater.addUpdater(new Update_2_3());
 			
 			updater.update();
 			LOG.info("Database Version: " + DBUtil.getUserVersion(dbConnection));

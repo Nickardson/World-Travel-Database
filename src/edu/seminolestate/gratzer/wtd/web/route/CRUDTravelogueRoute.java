@@ -127,6 +127,10 @@ public class CRUDTravelogueRoute extends AbstractHandler {
 								changed = true;
 							}
 							
+							if (session.getParms().containsKey("views")) {
+								log.setViews(Integer.parseInt(session.getParms().get("views")));
+								changed = true;
+							}
 							
 							if (changed) {
 								log.update(Main.dbConnection);

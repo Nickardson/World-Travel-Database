@@ -55,7 +55,14 @@ public class TravelogueImage implements IBean<TravelogueImage> {
 		return filename;
 	}
 
+	/**
+	 * @date 2016-04-03
+	 * Added safety check.
+	 */
 	public void setFilename(String filename) {
+		if (filename.contains("/") || filename.contains("\\"))
+			throw new IllegalArgumentException("Filename cannot traverse paths.");
+		
 		this.filename = filename;
 	}
 
