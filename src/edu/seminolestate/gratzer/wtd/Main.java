@@ -33,6 +33,7 @@ import edu.seminolestate.gratzer.wtd.database.DBUtil;
 import edu.seminolestate.gratzer.wtd.database.updates.Update_0_1;
 import edu.seminolestate.gratzer.wtd.database.updates.Update_1_2;
 import edu.seminolestate.gratzer.wtd.database.updates.Update_2_3;
+import edu.seminolestate.gratzer.wtd.database.updates.Update_3_4;
 import edu.seminolestate.gratzer.wtd.ui.Tray;
 import edu.seminolestate.gratzer.wtd.web.LoginSession;
 import edu.seminolestate.gratzer.wtd.web.PageProvider;
@@ -131,6 +132,7 @@ public class Main {
 			updater.addUpdater(new Update_0_1());
 			updater.addUpdater(new Update_1_2());
 			updater.addUpdater(new Update_2_3());
+			updater.addUpdater(new Update_3_4());
 			
 			updater.update();
 			LOG.info("Database Version: " + DBUtil.getUserVersion(dbConnection));

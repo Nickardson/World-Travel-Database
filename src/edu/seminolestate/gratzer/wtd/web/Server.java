@@ -168,6 +168,10 @@ public class Server extends RouterNanoHTTPD {
 		addRoute("/crud/location/?", CRUDLocationRoute.class);
 		addRoute("/crud/location/:id", CRUDLocationRoute.class);
 		
+		// 2016-04-17 added attraction
+		addRoute("/crud/attraction/?", CRUDAttractionRoute.class);
+		addRoute("/crud/attraction/:id", CRUDAttractionRoute.class);
+		
 		// ajax routes
 		addRoute("/ajax/locations", LocationPresetRoute.class);
 		

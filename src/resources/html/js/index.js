@@ -379,3 +379,227 @@ $(".log-images .logimg-expand").click(function() {
 	$(this).css("display", "none");
 	$(this).parent().find(".log-hidden").removeClass("log-hidden");
 });
+
+
+
+// 2016-04-17 - autoexpand the textarea for attractions
+function makeAutoExpand(elements) {
+	elements.keyup(function(e) {
+	    while($(this).outerHeight() < this.scrollHeight + parseFloat($(this).css("borderTopWidth")) + parseFloat($(this).css("borderBottomWidth"))) {
+	        $(this).height($(this).height()+1);
+	    };
+	});
+}
+
+makeAutoExpand($(".attr-comment"));
+
+$(".button-add-attraction").click(function () {
+	var log = $(this).closest(".travelogue");
+
+	var data = {
+			logid: log.data("log-id"),
+			name: log.find(".attr-name").val(),
+			rating: log.find(".attr-rating").val(),
+			comment: log.find(".attr-comment").val(),
+			type: log.find(".attr-type").val()
+	};
+	
+	$.ajax({
+		url : "/crud/attraction/",
+		type : 'POST',
+		data: data
+	}).done(function(e) {
+		console.log("done adding", e);
+		
+		// TODO: add smoother?
+		window.location.reload();
+		
+	}).error(function(e) {
+		console.log("error adding", e);
+	});
+});
+
+$(".button-remove-attraction").click(function () {
+	var log = $(this).closest(".travelogue");
+	var row = $(this).closest(".attr-row");
+
+	$.ajax({
+		url : "/crud/attraction/" + $(this).data("attraction-id"),
+		type : 'DELETE'
+	}).done(function(e) {
+		console.log("done deleting", e);
+		row.remove();
+	}).error(function(e) {
+		console.log("error updating", e);
+	});
+});
+
+// allow click name to update
+function bindName() {
+	var attraction = $(this).closest(".attr-row");
+	var attrid = attraction.data("attraction-id");
+	console.log(attraction.data('owner'));
+	if (!attraction.data('owner'))
+		return;
+	
+	var old;
+	
+	var n = $('<input>');
+	n.addClass("form-control");
+	n.change(function () {
+		console.log("Changed attraction ", attrid, " name to ", $(this).val());
+		old.text($(this).val());
+		n.replaceWith(old);
+		old.click(bindName);
+		
+		$.ajax({
+			url : "/crud/attraction/" + attrid,
+			type : 'PUT',
+			data: {
+				name: $(this).val()
+			}
+		}).done(function(e) {
+			console.log("done updating", e);
+		}).error(function(e) {
+			console.log("error updating", e);
+		});
+	});
+	old = $(this).replaceWith(n);
+	n.val(old.text());
+	n.focus();
+}
+$(".attr-name-content").click(bindName);
+
+//allow click star
+$(".attr-rating-star").click(function () {
+	var attraction = $(this).closest(".attr-row");
+	var attrid = attraction.data("attraction-id");
+	
+	if (!attraction.data('owner'))
+		return;
+	
+	var stars = $(this).index() + 1;
+	
+	// update the appearance of the relevant stars
+	attraction.find(".attr-rating-star").each(function () {
+		if ($(this).index() < stars) {
+			$(this).attr("src", "/images/star.png");
+		} else {
+			$(this).attr("src", "/images/star-empty.png");
+		}
+	});
+	
+	$.ajax({
+		url : "/crud/attraction/" + attrid,
+		type : 'PUT',
+		data: {
+			rating: stars
+		}
+	}).done(function(e) {
+		console.log("done updating", e, attrid, "stars to", stars);
+	}).error(function(e) {
+		console.log("error updating", e, attrid, "stars to", stars);
+	});
+});
+
+var ATTRACTIONS = [
+		"Other",
+		"Airport",
+		"Boat",
+		"Campground",
+		"Culture",
+		"Dining",
+		"Entertainment",
+		"Lodging",
+		"Museum",
+		"Park",
+		"Shopping"
+];
+
+// add the attraction options to each dropdown
+$(".attr-type").each(function () {
+	for (var i = 0; i < ATTRACTIONS.length; i++) {
+		$(this).append($("<option>").text(ATTRACTIONS[i]));
+	}
+});
+
+
+
+//allow click comment to update
+function bindComment () {
+	var attraction = $(this).closest(".attr-row");
+	var attrid = attraction.data("attraction-id");
+	console.log(attraction.data('owner'));
+	if (!attraction.data('owner'))
+		return;
+	
+	var old;
+	
+	var n = $('<textarea>');
+	n.addClass("form-control");
+	makeAutoExpand(n);
+	n.change(function () {
+		console.log("Changed attraction ", attrid, " comment to ", $(this).val());
+		old.text($(this).val());
+		n.replaceWith(old);
+		old.click(bindComment);
+		
+		$.ajax({
+			url : "/crud/attraction/" + attrid,
+			type : 'PUT',
+			data: {
+				comment: $(this).val()
+			}
+		}).done(function(e) {
+			console.log("done updating", e);
+		}).error(function(e) {
+			console.log("error updating", e);
+		});
+	});
+	old = $(this).replaceWith(n);
+	n.val(old.text());
+	n.focus();
+}
+$(".attr-comment-content").click(bindComment);
+
+
+//allow click name to update
+function bindType() {
+	var attraction = $(this).closest(".attr-row");
+	var attrid = attraction.data("attraction-id");
+	console.log(attraction.data('owner'));
+	if (!attraction.data('owner'))
+		return;
+	
+	var old;
+	
+	var n = $('<select>');
+	n.addClass("form-control");
+	
+	for (var i = 0; i < ATTRACTIONS.length; i++) {
+		n.append($("<option>").text(ATTRACTIONS[i]));
+	}
+	
+	n.change(function () {
+		console.log("Changed attraction ", attrid, " type to ", $(this).val());
+		old.text($(this).val());
+		n.replaceWith(old);
+		old.click(bindType);
+		
+		$.ajax({
+			url : "/crud/attraction/" + attrid,
+			type : 'PUT',
+			data: {
+				type: $(this).val()
+			}
+		}).done(function(e) {
+			console.log("done updating", e);
+		}).error(function(e) {
+			console.log("error updating", e);
+		});
+	});
+	old = $(this).replaceWith(n);
+	n.val(old.text());
+	n.focus();
+}
+$(".attr-type-content").click(bindType);

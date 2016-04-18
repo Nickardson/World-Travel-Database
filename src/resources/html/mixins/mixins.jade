@@ -116,6 +116,49 @@ mixin locationArea(t)
     br
     button.btn.btn-primary.btnSaveLocation Save Location
 
+mixin attraction(attr, isowner)
+  tr.attr-row(data-attraction-id=attr.id, data-owner=isowner ? "true": "false")
+    td.attr-name-content= attr.name
+    td.attr-rating-content
+      - var i = 1
+      while i < 6
+        if i <= attr.rating
+          img.attr-rating-star(src="/images/star.png")
+        else
+          img.attr-rating-star(src="/images/star-empty.png")
+        - i++
+    td.attr-comment-content= attr.comment
+    td.attr-type-content= attr.type
+    td
+      if isowner
+        button.btn.btn-danger.btn-xs.button-remove-attraction(data-attraction-id=attr.id) &times;
+
+mixin attractions(atls, t)
+  hr
+  h3 Attractions
+  table.table.table-striped.table-hover
+    tr
+      th
+      th Rating
+      th Comment
+      th Type
+      th
+    - var isowner = (t.ownerid == userid)
+    each attr, i in atls
+      +attraction(attr, isowner)
+    if isowner
+      tr
+        td
+          input.attr-name.form-control(placeholder="Attraction Name")
+        td
+          input.attr-rating.form-control(type="number", min=1, max=5, value=5)
+        td
+          textarea.attr-comment.form-control
+        td
+          select.attr-type.form-control
+        td
+          button.btn.btn-default.button-add-attraction +
+
 mixin travel(t, readonly)
   - readonly = readonly || false;
   .travelogue.panel.panel-default(data-log-id="#{t.id}")
@@ -134,6 +177,10 @@ mixin travel(t, readonly)
       - var logimgs = t.getImages()
       if logimgs.size() > 0
         +logimgs2(logimgs, t.id)
+
+      - var atls = t.getAttractions()
+      if atls.size() > 0 || !readonly
+        +attractions(atls, t)
       
       div.log-content= t.content
       textarea.log-edit-content(style="display:none")

@@ -63,8 +63,8 @@ public class Update_1_2 implements Updater {
 
 		// apply to the existing travelogues, ONLY if they are still the same
 		Travelogue travelEiffel = new Travelogue(1).read(connection);
-		Travelogue travelOpera = new Travelogue(2).read(connection);
-		Travelogue travelLeaning = new Travelogue(3).read(connection);
+		Travelogue travelOpera = new Travelogue(3).read(connection);
+		Travelogue travelLeaning = new Travelogue(2).read(connection);
 
 		if (travelEiffel.getOwnerid() == userAdmin.getId()) {
 			travelEiffel.setLocationid(locationEiffel.getId());

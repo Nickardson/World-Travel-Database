@@ -163,6 +163,16 @@ public class Travelogue implements IBean<Travelogue> {
 		query.setInt(1, this.getId());
 		return IBean.executeQuery(TravelogueImage.class, query);
 	}
+
+	/**
+	 * @return SELECTed list of Attractions that belong to the Travelogue with this ID
+	 * @throws SQLException
+	 */
+	public List<Attraction> getAttractions() throws SQLException {
+		PreparedStatement query = Main.dbConnection.prepareStatement("SELECT * FROM attractions WHERE logid = ?");
+		query.setInt(1, this.getId());
+		return IBean.executeQuery(Attraction.class, query);
+	}
 	
 	/**
 	 * Returns the Location bean, if any, for this Travelogue.
