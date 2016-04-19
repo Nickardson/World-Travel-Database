@@ -9,7 +9,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import edu.seminolestate.gratzer.wtd.Main;
-import edu.seminolestate.gratzer.wtd.beans.Travelogue;
 import edu.seminolestate.gratzer.wtd.beans.TravelogueImage;
 import edu.seminolestate.gratzer.wtd.database.PasswordHasher;
 import edu.seminolestate.gratzer.wtd.web.LoginSession;
@@ -134,7 +133,7 @@ public class CRUDTravelogueImageRoute extends AbstractHandler {
 			
 			try {
 				TravelogueImage image = new TravelogueImage(id);
-				Travelogue parentLog = new Travelogue(image.getLogid());
+//				Travelogue parentLog = new Travelogue(image.getLogid());
 				// TODO: adjust strictness
 //				if (parentLog.getOwnerid() != login.getUserID()) {
 //					return NanoHTTPD.newFixedLengthResponse(Status.UNAUTHORIZED, NanoHTTPD.MIME_PLAINTEXT, "You do not own this log!");

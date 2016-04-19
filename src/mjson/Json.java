@@ -1576,7 +1576,7 @@ public class Json implements java.io.Serializable
 	 * Json object or array.
 	 * @return this
 	 */
-	public Json with(Json object, Json[]options) { throw new UnsupportedOperationException(); }
+	public Json with(Json object, Json... options) { throw new UnsupportedOperationException(); }
 
     /**
      * Same as <code>{}@link #with(Json,Json...options)}</code> with each option

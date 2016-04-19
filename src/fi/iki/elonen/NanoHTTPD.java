@@ -1687,7 +1687,8 @@ public abstract class NanoHTTPD {
         return MIME_TYPES;
     }
 
-    private static void loadMimeTypes(Map<String, String> result, String resourceName) {
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+	private static void loadMimeTypes(Map<String, String> result, String resourceName) {
         try {
             Enumeration<URL> resources = NanoHTTPD.class.getClassLoader().getResources(resourceName);
             while (resources.hasMoreElements()) {

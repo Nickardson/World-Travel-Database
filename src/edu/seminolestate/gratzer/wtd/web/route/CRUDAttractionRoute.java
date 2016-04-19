@@ -5,7 +5,6 @@ import java.util.Map;
 
 import edu.seminolestate.gratzer.wtd.Main;
 import edu.seminolestate.gratzer.wtd.beans.Attraction;
-import edu.seminolestate.gratzer.wtd.beans.Location;
 import edu.seminolestate.gratzer.wtd.beans.Travelogue;
 import edu.seminolestate.gratzer.wtd.web.LoginSession;
 import edu.seminolestate.gratzer.wtd.web.Server;
@@ -39,7 +38,7 @@ public class CRUDAttractionRoute extends AbstractHandler {
 			// "comment": (string)
 			// "type": (string)
 			
-			int ownerid = login.getUserID();
+//			int ownerid = login.getUserID();
 			String name = session.getParms().get("name");
 			int logid = Integer.parseInt(session.getParms().get("logid"));
 			int rating = Integer.parseInt(session.getParms().get("rating"));

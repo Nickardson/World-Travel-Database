@@ -7,7 +7,6 @@ import java.sql.SQLException;
 
 import mjson.Json;
 import edu.seminolestate.gratzer.wtd.IJsonable;
-import edu.seminolestate.gratzer.wtd.Main;
 import edu.seminolestate.gratzer.wtd.database.DBUtil;
 
 /**

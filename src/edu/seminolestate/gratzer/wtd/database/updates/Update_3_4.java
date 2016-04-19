@@ -5,8 +5,6 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 import edu.seminolestate.gratzer.wtd.beans.Attraction;
-import edu.seminolestate.gratzer.wtd.beans.Travelogue;
-import edu.seminolestate.gratzer.wtd.beans.User;
 import edu.seminolestate.gratzer.wtd.database.DBUpdater.Updater;
 
 /**
