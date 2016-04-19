@@ -44,7 +44,7 @@ public class CRUDLocationRoute extends AbstractHandler {
 			
 			try {
 				Location location = new Location(Location.NO_ID, ownerid, name, latitude, longitude, shared);
-				location.create(Main.dbConnection);
+				location.create(Main.instance.dbConnection);
 				
 				// print out the new ID to response
 				return NanoHTTPD.newFixedLengthResponse(Integer.toString(location.getId()));
@@ -60,7 +60,7 @@ public class CRUDLocationRoute extends AbstractHandler {
 				int id = Integer.parseInt(idString);
 				
 				try {
-					Location location = new Location(id).read(Main.dbConnection);
+					Location location = new Location(id).read(Main.instance.dbConnection);
 					System.out.println("Updating location " + location);
 					// location must exist and be owned by the user
 					// TODO: ensure that this properly checks for null entries
@@ -97,7 +97,7 @@ public class CRUDLocationRoute extends AbstractHandler {
 					}
 					
 					if (changed) {
-						location.update(Main.dbConnection);
+						location.update(Main.instance.dbConnection);
 						return NanoHTTPD.newFixedLengthResponse(Integer.toString(location.getId()));
 					} else {
 						return NanoHTTPD.newFixedLengthResponse(Status.INTERNAL_ERROR, "text/plain", "no change");
@@ -122,7 +122,7 @@ public class CRUDLocationRoute extends AbstractHandler {
 			int id = Integer.parseInt(idString);
 			
 			try {
-				new Location(id).delete(Main.dbConnection);
+				new Location(id).delete(Main.instance.dbConnection);
 				return NanoHTTPD.newFixedLengthResponse(Status.OK, NanoHTTPD.MIME_PLAINTEXT, "");
 			} catch (SQLException e) {
 				e.printStackTrace();

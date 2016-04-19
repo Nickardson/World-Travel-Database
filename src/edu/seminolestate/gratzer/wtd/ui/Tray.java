@@ -28,7 +28,7 @@ public class Tray {
 		exitItem.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				Main.exit();
+				Main.instance.exit();
 			}
 		});
 		popup.add(exitItem);

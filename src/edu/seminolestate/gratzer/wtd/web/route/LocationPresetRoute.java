@@ -34,7 +34,7 @@ public class LocationPresetRoute extends AbstractHandler {
 				userID = login.getUserID();
 			}
 			
-			PreparedStatement query = Main.dbConnection.prepareStatement("SELECT * FROM locations WHERE shared OR ownerid = ?");
+			PreparedStatement query = Main.instance.dbConnection.prepareStatement("SELECT * FROM locations WHERE shared OR ownerid = ?");
 			query.setInt(1, userID);
 			List<Location> locations = IBean.executeQuery(Location.class, query);
 			

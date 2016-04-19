@@ -40,15 +40,15 @@ public class PageProvider {
 		public Pattern getPattern();
 	}
 	
-	private static Map<String, Populator> map = new HashMap<>();
-	private static List<RegexPopulator> regexPopulators = new ArrayList<>();
+	private Map<String, Populator> map = new HashMap<>();
+	private List<RegexPopulator> regexPopulators = new ArrayList<>();
 	
 	/**
 	 * Registers a populator for the given path
 	 * @param pop The populator
 	 * @param path The path which the populator applies to
 	 */
-	public static void register(Populator pop, String path) {
+	public void register(Populator pop, String path) {
 		map.put(path, pop);
 	}
 	
@@ -61,7 +61,7 @@ public class PageProvider {
 	 * @param urlParams From the request, may be null
 	 * @param session From the request, may be null
 	 */
-	public static void populate(Map<String, Object> model, String path, UriResource uriResource, Map<String, String> urlParams, IHTTPSession session) {
+	public void populate(Map<String, Object> model, String path, UriResource uriResource, Map<String, String> urlParams, IHTTPSession session) {
 		for (RegexPopulator pop : regexPopulators) {
 			if (pop.getPattern().matcher(path).find()) {
 				pop.populate(model, uriResource, urlParams, session);
@@ -80,8 +80,7 @@ public class PageProvider {
 	 * Every registered regexpopulator attempts to match every path, so they should be used sparingly
 	 * @param pop
 	 */
-	public static void registerPattern(RegexPopulator pop) {
+	public void registerPattern(RegexPopulator pop) {
 		regexPopulators.add(pop);
 	}
-	
 }

@@ -68,7 +68,7 @@ public class CRUDTravelogueRoute extends AbstractHandler {
 			
 			Travelogue log = new Travelogue(Travelogue.NO_ID, login.getUserID(), content, date, shared, locationid);
 			try {
-				log.create(Main.dbConnection);
+				log.create(Main.instance.dbConnection);
 				return NanoHTTPD.newFixedLengthResponse("success");
 			} catch (SQLException e) {
 				e.printStackTrace();
@@ -85,7 +85,7 @@ public class CRUDTravelogueRoute extends AbstractHandler {
 				int id = Integer.parseInt(idString);
 				
 				try {
-					Travelogue log = new Travelogue(id).read(Main.dbConnection);
+					Travelogue log = new Travelogue(id).read(Main.instance.dbConnection);
 					System.out.println("Updating log " + log);
 					// log must exist and be owned by the user
 					// TODO: allow admins to edit always
@@ -133,7 +133,7 @@ public class CRUDTravelogueRoute extends AbstractHandler {
 							}
 							
 							if (changed) {
-								log.update(Main.dbConnection);
+								log.update(Main.instance.dbConnection);
 								
 								System.out.println("Success updating log " + log);
 							} else {
@@ -163,9 +163,9 @@ public class CRUDTravelogueRoute extends AbstractHandler {
 			int id = Integer.parseInt(idString);
 			
 			try {
-				Travelogue log = new Travelogue(id).read(Main.dbConnection);
+				Travelogue log = new Travelogue(id).read(Main.instance.dbConnection);
 				if (log.getOwnerid() == login.getUserID()) {
-					log.delete(Main.dbConnection);
+					log.delete(Main.instance.dbConnection);
 					return NanoHTTPD.newFixedLengthResponse("success");
 				} else {
 					return NanoHTTPD.newFixedLengthResponse(Status.FORBIDDEN, NanoHTTPD.MIME_PLAINTEXT, "Not the owner of this log.");

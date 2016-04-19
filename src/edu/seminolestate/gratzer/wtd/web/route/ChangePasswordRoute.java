@@ -41,7 +41,7 @@ public class ChangePasswordRoute extends AbstractHandler {
 		String hashedPassword = PasswordHasher.hashPassword(newPassword);
 		
 		try {
-			User user = new User(login.getUserID()).read(Main.dbConnection);
+			User user = new User(login.getUserID()).read(Main.instance.dbConnection);
 			
 			// confirm the given current password is correct
 			if (!PasswordHasher.hashPassword(currentPassword).equals(user.getPassword())) {
@@ -50,7 +50,7 @@ public class ChangePasswordRoute extends AbstractHandler {
 			
 			// update the password
 			user.setPassword(hashedPassword);
-			user.update(Main.dbConnection);
+			user.update(Main.instance.dbConnection);
 			
 			// TODO: invalidate session?
 			return Server.newRedirectResponse("/");

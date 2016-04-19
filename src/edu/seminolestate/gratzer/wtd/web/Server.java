@@ -32,7 +32,7 @@ public class Server extends RouterNanoHTTPD {
 	/**
 	 * Whether server should cache pages
 	 */
-	private boolean isCaching;
+	private boolean isCaching = false;
 	
 	/**
 	 * Creates the web server bound to the given port
@@ -44,7 +44,12 @@ public class Server extends RouterNanoHTTPD {
 		
 		LOG.info("Web Port: " + port);
 		
-		isCaching = Main.properties.getProperty("web.caching").equals("true");
+		try {
+			isCaching = Main.instance.getProperties().getProperty("web.caching").equals("true");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
 		LOG.info("web.caching?: " + isCaching);
 		
 		addMappings();
@@ -139,7 +144,7 @@ public class Server extends RouterNanoHTTPD {
 	public static LoginSession getLoginSession(IHTTPSession session) {
 		String sessionid = session.getCookies().read("sessionid");
 		if (sessionid != null) {
-			LoginSession login = Main.server.getLoginSession(Integer.parseInt(sessionid));
+			LoginSession login = Main.instance.server.getLoginSession(Integer.parseInt(sessionid));
 			return login;
 		} else {
 			return null;

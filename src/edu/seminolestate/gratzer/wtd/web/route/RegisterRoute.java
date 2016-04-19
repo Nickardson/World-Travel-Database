@@ -34,14 +34,14 @@ public class RegisterRoute extends AbstractHandler {
 		
 		User newUser = new User(User.NO_ID, username, hashedPassword, false);
 		try {
-			User checkUser = new User(User.NO_ID, username, hashedPassword, false).read(Main.dbConnection, username);
+			User checkUser = new User(User.NO_ID, username, hashedPassword, false).read(Main.instance.dbConnection, username);
 			if (checkUser.getId() == User.NO_ID) {
 				System.out.println("Registering new user: " + checkUser);
 				
-				newUser.create(Main.dbConnection);
-				newUser.read(Main.dbConnection, username);
+				newUser.create(Main.instance.dbConnection);
+				newUser.read(Main.instance.dbConnection, username);
 				
-				int sessionID = Main.server.generateLoginSession(newUser.getId()).getSessionID();
+				int sessionID = Main.instance.server.generateLoginSession(newUser.getId()).getSessionID();
 				session.getCookies().set(new PathedCookie("sessionid", Integer.toString(sessionID), 5, "/"));
 				
 				return Server.newRedirectResponse("/");

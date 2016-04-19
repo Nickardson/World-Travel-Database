@@ -47,7 +47,7 @@ public class CRUDAttractionRoute extends AbstractHandler {
 			
 			try {
 				Attraction attraction = new Attraction(Attraction.NO_ID, logid, name, rating, comment, type);
-				attraction.create(Main.dbConnection);
+				attraction.create(Main.instance.dbConnection);
 				
 				// print out the new ID to response
 				return NanoHTTPD.newFixedLengthResponse(Integer.toString(attraction.getId()));
@@ -63,7 +63,7 @@ public class CRUDAttractionRoute extends AbstractHandler {
 				int id = Integer.parseInt(idString);
 				
 				try {
-					Attraction attraction = new Attraction(id).read(Main.dbConnection);
+					Attraction attraction = new Attraction(id).read(Main.instance.dbConnection);
 					System.out.println("Updating Attraction " + attraction);
 					// location must exist and be owned by the user
 					// TODO: ensure that this properly checks for null entries
@@ -71,7 +71,7 @@ public class CRUDAttractionRoute extends AbstractHandler {
 						return NanoHTTPD.newFixedLengthResponse(Status.INTERNAL_ERROR, "text/plain", "invalid log id");
 					}
 					
-					Travelogue ownerLog = new Travelogue(attraction.getLogid()).read(Main.dbConnection);
+					Travelogue ownerLog = new Travelogue(attraction.getLogid()).read(Main.instance.dbConnection);
 					// TODO: allow admins to edit always
 					if (ownerLog.getOwnerid() != login.getUserID()) {
 						return NanoHTTPD.newFixedLengthResponse(Status.FORBIDDEN, "text/plain", "not the owner of this log");
@@ -106,7 +106,7 @@ public class CRUDAttractionRoute extends AbstractHandler {
 					}
 					
 					if (changed) {
-						attraction.update(Main.dbConnection);
+						attraction.update(Main.instance.dbConnection);
 						return NanoHTTPD.newFixedLengthResponse(Integer.toString(attraction.getId()));
 					} else {
 						return NanoHTTPD.newFixedLengthResponse(Status.INTERNAL_ERROR, "text/plain", "no change");
@@ -131,7 +131,7 @@ public class CRUDAttractionRoute extends AbstractHandler {
 			
 			try {
 				System.out.println("Deleting attraction " + id);
-				new Attraction(id).delete(Main.dbConnection);
+				new Attraction(id).delete(Main.instance.dbConnection);
 				return NanoHTTPD.newFixedLengthResponse(Status.OK, NanoHTTPD.MIME_PLAINTEXT, "");
 			} catch (SQLException e) {
 				e.printStackTrace();

@@ -38,14 +38,14 @@ public class JadeRendererRoute extends AbstractHandler {
 	static {
 		// Create Jade Configuration, disable caching in development environment
 		config = new JadeConfiguration();
-		config.setCaching(!Main.isEclipse);
+		config.setCaching(!Main.instance.isEclipse);
 		
 		Map<String, Object> def = new HashMap<String, Object>();
 		def.put("_", new JadeHelper());
 		
 		config.setSharedVariables(def);
 		
-		if (Main.isEclipse) {
+		if (Main.instance.isEclipse) {
 			// eclipse, use the relative source path
 			config.setTemplateLoader(new TemplateLoader() {
 				@Override
@@ -99,7 +99,7 @@ public class JadeRendererRoute extends AbstractHandler {
 		InputStream resource = null;
         try {
         	if (hasResource(path)) {
-        		if (Main.isEclipse) {
+        		if (Main.instance.isEclipse) {
         			resource = new FileInputStream(new File("src", path));
         		} else {
         			resource = Server.class.getResourceAsStream(path.toString());
@@ -112,7 +112,7 @@ public class JadeRendererRoute extends AbstractHandler {
             		try {
         				Map<String, Object> model = new HashMap<String, Object>();
         				
-        				PageProvider.populate(model, path, uriResource, urlParams, session);
+        				Main.instance.pageProvider.populate(model, path, uriResource, urlParams, session);
         				
         				return NanoHTTPD.newFixedLengthResponse(NanoHTTPD.Response.Status.OK, "text/html", config.renderTemplate(config.getTemplate(path), model));
         			} catch (JadeException | IOException e) {

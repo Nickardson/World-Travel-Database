@@ -20,7 +20,7 @@ public class LogoutRoute extends AbstractHandler {
 		
 		String idString = session.getCookies().read("sessionid");
 		if (idString != null) {
-			Main.server.deleteUserSession(Integer.parseInt(idString));
+			Main.instance.server.deleteUserSession(Integer.parseInt(idString));
 			session.getCookies().delete("sessionid");
 		}
 		

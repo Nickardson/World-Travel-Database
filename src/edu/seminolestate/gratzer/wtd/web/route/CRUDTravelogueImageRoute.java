@@ -115,7 +115,7 @@ public class CRUDTravelogueImageRoute extends AbstractHandler {
 						Files.copy(tempFile.toPath(), dest.toPath(), StandardCopyOption.REPLACE_EXISTING);
 						
 						TravelogueImage img = new TravelogueImage(TravelogueImage.NO_ID, logid, imgName);
-						img.create(Main.dbConnection);
+						img.create(Main.instance.dbConnection);
 					} catch (IOException | SQLException e) {
 						e.printStackTrace();
 						return NanoHTTPD.newFixedLengthResponse(Status.INTERNAL_ERROR, NanoHTTPD.MIME_PLAINTEXT, "Internal server error: " + e.getMessage());
@@ -139,7 +139,7 @@ public class CRUDTravelogueImageRoute extends AbstractHandler {
 //					return NanoHTTPD.newFixedLengthResponse(Status.UNAUTHORIZED, NanoHTTPD.MIME_PLAINTEXT, "You do not own this log!");
 //				}
 				
-				image.delete(Main.dbConnection);
+				image.delete(Main.instance.dbConnection);
 				return NanoHTTPD.newFixedLengthResponse(Status.OK, NanoHTTPD.MIME_PLAINTEXT, "");
 			} catch (SQLException e) {
 				e.printStackTrace();

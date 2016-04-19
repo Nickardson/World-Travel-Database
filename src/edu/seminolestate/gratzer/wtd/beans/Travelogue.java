@@ -140,7 +140,7 @@ public class Travelogue implements IBean<Travelogue> {
 		try {
 			this.setViews(this.getViews() + 1);
 			// runs a simpler update query, rather than full-blown update call
-			PreparedStatement up = Main.dbConnection.prepareStatement("UPDATE travelogues SET views = ? WHERE id = ?");
+			PreparedStatement up = Main.instance.dbConnection.prepareStatement("UPDATE travelogues SET views = ? WHERE id = ?");
 			up.setInt(1, this.getViews());
 			up.setInt(2, getId());
 			up.executeUpdate();
@@ -159,7 +159,7 @@ public class Travelogue implements IBean<Travelogue> {
 	public List<TravelogueImage> getImages() throws SQLException {
 		this.addView();
 		
-		PreparedStatement query = Main.dbConnection.prepareStatement("SELECT * FROM travel_images WHERE logid = ?");
+		PreparedStatement query = Main.instance.dbConnection.prepareStatement("SELECT * FROM travel_images WHERE logid = ?");
 		query.setInt(1, this.getId());
 		return IBean.executeQuery(TravelogueImage.class, query);
 	}
@@ -169,7 +169,7 @@ public class Travelogue implements IBean<Travelogue> {
 	 * @throws SQLException
 	 */
 	public List<Attraction> getAttractions() throws SQLException {
-		PreparedStatement query = Main.dbConnection.prepareStatement("SELECT * FROM attractions WHERE logid = ?");
+		PreparedStatement query = Main.instance.dbConnection.prepareStatement("SELECT * FROM attractions WHERE logid = ?");
 		query.setInt(1, this.getId());
 		return IBean.executeQuery(Attraction.class, query);
 	}
@@ -182,7 +182,7 @@ public class Travelogue implements IBean<Travelogue> {
 	 */
 	public Location getLocation() throws SQLException {
 		if (getLocationid() != Location.NO_ID) {
-			PreparedStatement query = Main.dbConnection.prepareStatement("SELECT * FROM locations WHERE id = ?");
+			PreparedStatement query = Main.instance.dbConnection.prepareStatement("SELECT * FROM locations WHERE id = ?");
 			query.setInt(1, this.getLocationid());
 			return IBean.executeQuery(Location.class, query).get(0);			
 		} else {
@@ -193,9 +193,9 @@ public class Travelogue implements IBean<Travelogue> {
 	@Override
 	public Travelogue create(Connection connection) throws SQLException {
 		PreparedStatement p;
-		if (DBUtil.getUserVersion(Main.dbConnection) >= 3) {
+		if (DBUtil.getUserVersion(Main.instance.dbConnection) >= 3) {
 			p = connection.prepareStatement("INSERT INTO travelogues (id, ownerid, content, visitdate, shared, locationid, views) VALUES (?, ?, ?, ?, ?, ?, ?)");
-		} else if (DBUtil.getUserVersion(Main.dbConnection) >= 2) {
+		} else if (DBUtil.getUserVersion(Main.instance.dbConnection) >= 2) {
 			p = connection.prepareStatement("INSERT INTO travelogues (id, ownerid, content, visitdate, shared, locationid) VALUES (?, ?, ?, ?, ?, ?)");
 		} else {
 			p = connection.prepareStatement("INSERT INTO travelogues (id, ownerid, content, visitdate) VALUES (?, ?, ?, ?)");
@@ -216,7 +216,7 @@ public class Travelogue implements IBean<Travelogue> {
 		}
 		
 		// Database Version 2
-		if (DBUtil.getUserVersion(Main.dbConnection) >= 2) {
+		if (DBUtil.getUserVersion(Main.instance.dbConnection) >= 2) {
 			p.setBoolean(5, isShared());
 			
 			if (getLocationid() == NO_ID) {
@@ -226,7 +226,7 @@ public class Travelogue implements IBean<Travelogue> {
 			}
 		}
 		
-		if (DBUtil.getUserVersion(Main.dbConnection) >= 3) {
+		if (DBUtil.getUserVersion(Main.instance.dbConnection) >= 3) {
 			p.setInt(7, getViews());
 		}
 		
@@ -254,9 +254,9 @@ public class Travelogue implements IBean<Travelogue> {
 	@Override
 	public Travelogue update(Connection c) throws SQLException {
 		PreparedStatement p;
-		if (DBUtil.getUserVersion(Main.dbConnection) >= 3) {
+		if (DBUtil.getUserVersion(Main.instance.dbConnection) >= 3) {
 			p = c.prepareStatement("UPDATE travelogues SET ownerid = ?, content = ?, visitdate = ?, shared = ?, locationid = ?, views = ? WHERE id = ?");
-		} else if (DBUtil.getUserVersion(Main.dbConnection) >= 2) {
+		} else if (DBUtil.getUserVersion(Main.instance.dbConnection) >= 2) {
 			p = c.prepareStatement("UPDATE travelogues SET ownerid = ?, content = ?, visitdate = ?, shared = ?, locationid = ? WHERE id = ?");
 		} else {
 			p = c.prepareStatement("UPDATE travelogues SET ownerid = ?, content = ?, visitdate = ? WHERE id = ?");
@@ -273,7 +273,7 @@ public class Travelogue implements IBean<Travelogue> {
 		}
 		
 		// Database Version 2
-		if (DBUtil.getUserVersion(Main.dbConnection) >= 2) {
+		if (DBUtil.getUserVersion(Main.instance.dbConnection) >= 2) {
 			p.setBoolean(INDEX++, isShared());
 			
 			if (getLocationid() == NO_ID) {
@@ -283,7 +283,7 @@ public class Travelogue implements IBean<Travelogue> {
 			}			
 		}
 		
-		if (DBUtil.getUserVersion(Main.dbConnection) >= 3) {
+		if (DBUtil.getUserVersion(Main.instance.dbConnection) >= 3) {
 			System.out.println("version 3 w views " + this);
 			p.setInt(INDEX++, getViews());
 		}
@@ -323,7 +323,7 @@ public class Travelogue implements IBean<Travelogue> {
 		
 		
 		// Database Version 2
-		if (DBUtil.getUserVersion(Main.dbConnection) >= 2) {
+		if (DBUtil.getUserVersion(Main.instance.dbConnection) >= 2) {
 			this.setShared(rs.getBoolean("shared"));
 			
 			int locationid = rs.getInt("locationid");
@@ -334,7 +334,7 @@ public class Travelogue implements IBean<Travelogue> {
 			}			
 		}
 		
-		if (DBUtil.getUserVersion(Main.dbConnection) >= 3) {
+		if (DBUtil.getUserVersion(Main.instance.dbConnection) >= 3) {
 			this.setViews(rs.getInt("views"));
 		}
 		

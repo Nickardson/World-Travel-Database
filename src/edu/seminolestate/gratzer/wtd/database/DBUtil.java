@@ -110,8 +110,8 @@ public class DBUtil {
 	 * @throws SQLException
 	 */
 	public static void migrateTable(String table, Statement statement, String sql) throws SQLException {
-		final boolean oldAutoCommit = Main.dbConnection.getAutoCommit();
-		Main.dbConnection.setAutoCommit(false);
+		final boolean oldAutoCommit = Main.instance.dbConnection.getAutoCommit();
+		Main.instance.dbConnection.setAutoCommit(false);
 		
 		try {
 			statement.executeUpdate("ALTER TABLE " + table + " RENAME TO _temp" + table);
@@ -123,10 +123,10 @@ public class DBUtil {
 			statement.executeUpdate("DROP TABLE _temp" + table);
 		} catch (Exception e) {
 			e.printStackTrace();
-			Main.dbConnection.rollback();
+			Main.instance.dbConnection.rollback();
 		} finally {
-			Main.dbConnection.commit();
-			Main.dbConnection.setAutoCommit(oldAutoCommit);
+			Main.instance.dbConnection.commit();
+			Main.instance.dbConnection.setAutoCommit(oldAutoCommit);
 		}
 	}
 	
